@@ -11,7 +11,7 @@ class User(AbstractUser):
 
     class LanguageChoices(models.TextChoices):
         KR = ("kr", "Korean")
-        FEMALE = ("en", "English")
+        EN = ("en", "English")
 
     class CurrencyChoices(models.TextChoices):
         WON = ("won", "Korean won")
