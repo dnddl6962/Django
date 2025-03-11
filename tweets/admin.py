@@ -16,7 +16,7 @@ class WordFilter(admin.SimpleListFilter):
 
     def queryset(self, request, tweet):
         Elon_Musk = self.value()
-        if Elon_Musk == "contains":  # word가 None이 아닌 경우에만 필터 적용
+        if Elon_Musk == "contains":
             return tweet.filter(payload__icontains="elon musk")
         elif Elon_Musk == "not_contains":
             return tweet.exclude(payload__icontains="elon musk")
