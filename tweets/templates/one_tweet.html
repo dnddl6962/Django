@@ -1,0 +1,10 @@
+{% if not not_found %}
+
+<h1>Tweet is Here!</h1>
+
+<h3>{{tweet.user}} : {{tweet.payload}}(likes : {{tweet.total_likes}})</h3>
+
+{% else %}
+<h1>404 NOT FOUND</h1>
+
+{% endif %}
