@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.status import HTTP_204_NO_CONTENT
 from .models import Tweet
+from users.models import User
 from .serializers import TweetSerializer
 
 # Create your views here.
@@ -62,6 +63,19 @@ def tweet(request, tweet_pk):
     elif request.method == "DELETE":
         tweet.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+def user_tweets(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        raise NotFound
+
+    tweets = user.tweets.all()  # related_name="tweets" 사용
+    serializers = TweetSerializer(tweets, many=True)
+
+    return Response(serializers.data)
 
 
 # jsonresponse 이용
