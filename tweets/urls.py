@@ -2,8 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.tweets),
-    path("<int:tweet_pk>", views.tweet),
+    path("", views.Tweets.as_view()),
+    path("<int:tweet_pk>", views.OneTweet.as_view()),
 ]
 
 # render

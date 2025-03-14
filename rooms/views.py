@@ -2,9 +2,39 @@ from rest_framework.status import HTTP_204_NO_CONTENT
 from django.shortcuts import render
 from .models import Room, Amenity
 from rest_framework.views import APIView
-from .serializers import AmenitySerializer
+from .serializers import AmenitySerializer, RoomListSerializer, RoomDetailSerializer
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
+
+
+class Rooms(APIView):
+    def get(self, request):
+        all_rooms = Room.objects.all()
+        serializer = RoomListSerializer(all_rooms, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = RoomDetailSerializer(data=request.data)
+        if serializer.is_valid():
+            new_room = serializer.save()
+            return Response(
+                RoomDetailSerializer(new_room).data,
+            )
+        else:
+            return Response(serializer.errors)
+
+
+class RoomDetail(APIView):
+    def get_object(self, pk):
+        try:
+            room = Room.objects.get(pk=pk)
+        except Room.DoesNotExist:
+            raise NotFound
+        return room
+
+    def get(self, request, pk):
+        serializer = RoomDetailSerializer(self.get_object(pk))
+        return Response(serializer.data)
 
 
 class Amenities(APIView):

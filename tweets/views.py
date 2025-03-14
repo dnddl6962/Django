@@ -1,20 +1,20 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.core import serializers
-from rest_framework.decorators import api_view
+# from django.shortcuts import render
+# from django.http import JsonResponse
+# from django.core import serializers
+# from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.status import HTTP_204_NO_CONTENT
 from .models import Tweet
+from rest_framework.views import APIView
 from users.models import User
 from .serializers import TweetSerializer
 
 # Create your views here.
 
 
-@api_view(["GET", "POST"])
-def tweets(request):
-    if request.method == "GET":
+class Tweets(APIView):
+    def get(self, request):
         all_tweets = Tweet.objects.all()
         serializers = TweetSerializer(
             all_tweets,
@@ -23,7 +23,8 @@ def tweets(request):
         return Response(
             serializers.data,
         )
-    elif request.method == "POST":
+
+    def post(self, request):
         serializers = TweetSerializer(
             data=request.data,
         )
@@ -36,18 +37,23 @@ def tweets(request):
             return Response(serializers.errors)
 
 
-@api_view(["GET", "PUT", "DELETE"])
-def tweet(request, tweet_pk):
-    try:
-        tweet = Tweet.objects.get(pk=tweet_pk)
-    except Tweet.DoesNotExist:
-        raise NotFound
-    if request.method == "GET":
+class OneTweet(APIView):
+    def get_object(self, tweet_pk):
+        try:
+            tweet = Tweet.objects.get(pk=tweet_pk)
+            return tweet
+        except Tweet.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, tweet_pk):
+        tweet = self.get_object(tweet_pk)
         serializers = TweetSerializer(tweet)
         return Response(
             serializers.data,
         )
-    elif request.method == "PUT":
+
+    def put(self, request, tweet_pk):
+        tweet = self.get_object(tweet_pk)
         serializers = TweetSerializer(
             tweet,
             data=request.data,
@@ -60,22 +66,90 @@ def tweet(request, tweet_pk):
             )
         else:
             return Response(serializers.errors)
-    elif request.method == "DELETE":
+
+    def delete(self, request, tweet_pk):
+        tweet = self.get_object(tweet_pk)
         tweet.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
 
-@api_view(["GET"])
-def user_tweets(request, user_id):
-    try:
-        user = User.objects.get(id=user_id)
-    except User.DoesNotExist:
-        raise NotFound
+class UserTweets(APIView):
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise NotFound
 
-    tweets = user.tweets.all()  # related_name="tweets" 사용
-    serializers = TweetSerializer(tweets, many=True)
+        tweets = user.tweets.all()  # related_name="tweets" 사용
+        serializers = TweetSerializer(tweets, many=True)
 
-    return Response(serializers.data)
+        return Response(serializers.data)
+
+
+# @api_view(["GET", "POST"])
+# def tweets(request):
+#     if request.method == "GET":
+#         all_tweets = Tweet.objects.all()
+#         serializers = TweetSerializer(
+#             all_tweets,
+#             many=True,
+#         )
+#         return Response(
+#             serializers.data,
+#         )
+#     elif request.method == "POST":
+#         serializers = TweetSerializer(
+#             data=request.data,
+#         )
+#         if serializers.is_valid() == True:
+#             new_tweet = serializers.save()
+#             return Response(
+#                 TweetSerializer(new_tweet).data,
+#             )
+#         else:
+#             return Response(serializers.errors)
+
+
+# @api_view(["GET", "PUT", "DELETE"])
+# def tweet(request, tweet_pk):
+#     try:
+#         tweet = Tweet.objects.get(pk=tweet_pk)
+#     except Tweet.DoesNotExist:
+#         raise NotFound
+#     if request.method == "GET":
+#         serializers = TweetSerializer(tweet)
+#         return Response(
+#             serializers.data,
+#         )
+#     elif request.method == "PUT":
+#         serializers = TweetSerializer(
+#             tweet,
+#             data=request.data,
+#             partial=True,
+#         )
+#         if serializers.is_valid() == True:
+#             updated_tweet = serializers.save()
+#             return Response(
+#                 TweetSerializer(updated_tweet).data,
+#             )
+#         else:
+#             return Response(serializers.errors)
+#     elif request.method == "DELETE":
+#         tweet.delete()
+#         return Response(status=HTTP_204_NO_CONTENT)
+
+
+# @api_view(["GET"])
+# def user_tweets(request, user_id):
+#     try:
+#         user = User.objects.get(id=user_id)
+#     except User.DoesNotExist:
+#         raise NotFound
+
+#     tweets = user.tweets.all()  # related_name="tweets" 사용
+#     serializers = TweetSerializer(tweets, many=True)
+
+#     return Response(serializers.data)
 
 
 # jsonresponse 이용
