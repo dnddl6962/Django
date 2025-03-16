@@ -15,13 +15,17 @@ class AmenitySerializer(ModelSerializer):
 
 class RoomDetailSerializer(ModelSerializer):
 
-    category = CategorySerializer()
-    owner = TinyUserSerializer()
-    amenities = AmenitySerializer(many=True)
+    category = CategorySerializer(read_only=True)
+    owner = TinyUserSerializer(read_only=True)
+    amenities = AmenitySerializer(many=True, read_only=True)
 
     class Meta:
         model = Room
         fields = "__all__"
+
+    # def create(self, validated_data):
+    #     print(validated_data)
+    #     return
 
 
 class RoomListSerializer(ModelSerializer):

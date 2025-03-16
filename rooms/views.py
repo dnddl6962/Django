@@ -1,10 +1,11 @@
 from rest_framework.status import HTTP_204_NO_CONTENT
-from django.shortcuts import render
+from django.db import transaction
 from .models import Room, Amenity
+from categories.models import Category
 from rest_framework.views import APIView
 from .serializers import AmenitySerializer, RoomListSerializer, RoomDetailSerializer
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, NotAuthenticated, ParseError
 
 
 class Rooms(APIView):
@@ -14,14 +15,40 @@ class Rooms(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = RoomDetailSerializer(data=request.data)
-        if serializer.is_valid():
-            new_room = serializer.save()
-            return Response(
-                RoomDetailSerializer(new_room).data,
-            )
+        if (
+            request.user.is_authenticated
+        ):  # 유저 검증하는 것이다. 즉, 로그인이 되어있어야만 방을 만들 수 있다.
+            serializer = RoomDetailSerializer(data=request.data)
+            if serializer.is_valid():
+                category_id = request.data.get("category")
+                # amentie
+                if not category_id:
+                    raise ParseError("Category is required")
+                try:
+                    category = Category.objects.get(pk=category_id)
+                    if category.kind == Category.CategoryKindChoices.EXPERIENCES:
+                        raise ParseError("The category kind should be rooms")
+                except Category.DoesNotExist:
+                    raise ParseError("Category not found")
+                try:
+                    with transaction.atomic():
+                        new_room = serializer.save(
+                            owner=request.user,
+                            category=category,
+                        )
+                        amenities = request.data.get("amenities")
+                        for amenity_pk in amenities:
+                            amenity = Amenity.objects.get(pk=amenity_pk)
+                            new_room.amenities.add(amenity)
+                        return Response(
+                            RoomDetailSerializer(new_room).data,
+                        )
+                except Exception:
+                    raise ParseError("Amenity not found")
+            else:
+                return Response(serializer.errors)
         else:
-            return Response(serializer.errors)
+            raise NotAuthenticated
 
 
 class RoomDetail(APIView):
@@ -85,9 +112,3 @@ class AmenityDetail(APIView):
     def delete(self, request, pk):
         self.get_object(pk).delete()
         return Response(status=HTTP_204_NO_CONTENT)
-
-
-# Create your views here.
-def see_all_rooms(request):
-    rooms = Room.objects.all()
-    return render(request, "all_rooms.html", {"rooms": rooms})

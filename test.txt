@@ -1,0 +1,15 @@
+
+{
+    "name": "We are done",
+    "country": "Korea",
+    "city": "Seoul",
+    "price": 1000,
+    "rooms": 3,
+    "toilets": 2,
+    "description": "Room with amenities, category, and owner",
+    "address": "123-45, Seoul, Korea",
+    "pet_friendly": true,
+    "category" : 3,
+    "amenities": [7771, 2, 4, 5],
+    "kind": "private_room"
+}
