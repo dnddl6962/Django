@@ -5,8 +5,8 @@ from common.models import CommonModel
 class Photo(CommonModel):
     """Photo Model Definition"""
 
-    file = models.ImageField()
-    descprition = models.CharField(
+    file = models.URLField()
+    description = models.CharField(
         max_length=140,
     )
     room = models.ForeignKey(
@@ -14,7 +14,7 @@ class Photo(CommonModel):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        related_name="medias",
+        related_name="photos",
     )
 
     experience = models.ForeignKey(
@@ -22,7 +22,7 @@ class Photo(CommonModel):
         null=True,
         blank=True,
         on_delete=models.CASCADE,
-        related_name="medias",
+        related_name="photos",
     )
 
     def __str__(self):
@@ -30,7 +30,7 @@ class Photo(CommonModel):
 
 
 class Video(CommonModel):
-    file = models.FileField()
+    file = models.URLField()
     experience = models.OneToOneField(
         "experiences.Experience",
         on_delete=models.CASCADE,

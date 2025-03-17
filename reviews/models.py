@@ -28,7 +28,7 @@ class Review(CommonModel):
     )
 
     payload = models.TextField()
-    rating = models.BigIntegerField()
+    rating = models.PositiveIntegerField()
 
     def __str__(self):
         return f"{self.user} / {self.rating} "
