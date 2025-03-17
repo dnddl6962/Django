@@ -1,10 +1,40 @@
 # from rest_framework.ser import serializers
 from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from users.models import User
 from .models import Tweet
 
 
+class TinyUserSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "name",
+            "avatar",
+            "username",
+        )
+
+
+class TweetsSerializer(ModelSerializer):
+    user = TinyUserSerializer(read_only=True)
+    total_likes = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Tweet
+        fields = (
+            "pk",
+            "payload",
+            "user",
+            "total_likes",
+        )
+
+    def get_total_likes(self, tweet):
+        return tweet.total_likes()
+
+
 class TweetSerializer(ModelSerializer):
+
+    user = TinyUserSerializer(read_only=True)
 
     class Meta:
         model = Tweet

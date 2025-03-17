@@ -130,7 +130,7 @@ class RoomDetail(APIView):
         room = self.get_object(pk)
         if room.owner != request.user:  # 방 주인이 아닌 유저
             raise PermissionDenied
-        # 위의 두 조건을 모두 통과하면
+
         serializer = RoomDetailSerializer(
             room,
             data=request.data,

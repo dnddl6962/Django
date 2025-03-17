@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.Tweets.as_view()),
-    path("<int:tweet_pk>", views.OneTweet.as_view()),
+    path("<int:pk>", views.OneTweet.as_view()),
 ]
 
 # render

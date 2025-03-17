@@ -1,12 +1,44 @@
 from rest_framework.serializers import ModelSerializer
 from .models import User
+from rooms.models import Room
 
 
-class TinyUserSerializer(ModelSerializer):
+class RoomSerializer(ModelSerializer):
+    class Meta:
+        model = Room
+        fields = (
+            "pk",
+            "name",
+            "country",
+            "city",
+            "price",
+            "rating",
+        )
+
+
+class UserListSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "name",
-            "avatar",
+            "id",
             "username",
+            "email",
+            "date_joined",
+            "avatar",
+        )
+
+
+class UserDetailSerializer(ModelSerializer):
+
+    rooms = RoomSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "email",
+            "date_joined",
+            "avatar",
+            "rooms",
         )

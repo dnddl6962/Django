@@ -3,80 +3,88 @@
 # from django.core import serializers
 # from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.status import HTTP_204_NO_CONTENT
 from .models import Tweet
 from rest_framework.views import APIView
 from users.models import User
-from .serializers import TweetSerializer
+from .serializers import TweetsSerializer, TweetSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 # Create your views here.
 
 
 class Tweets(APIView):
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         all_tweets = Tweet.objects.all()
-        serializers = TweetSerializer(
+        serializers = TweetsSerializer(
             all_tweets,
             many=True,
         )
-        return Response(
-            serializers.data,
-        )
+        return Response(serializers.data)
 
     def post(self, request):
-        serializers = TweetSerializer(
-            data=request.data,
-        )
-        if serializers.is_valid() == True:
-            new_tweet = serializers.save()
+        serializers = TweetsSerializer(data=request.data)
+        if serializers.is_valid():
+            new_tweet = serializers.save(user=request.user)
             return Response(
-                TweetSerializer(new_tweet).data,
+                TweetsSerializer(new_tweet).data,
             )
         else:
             return Response(serializers.errors)
 
 
 class OneTweet(APIView):
-    def get_object(self, tweet_pk):
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_object(self, pk):
         try:
-            tweet = Tweet.objects.get(pk=tweet_pk)
+            tweet = Tweet.objects.get(pk=pk)
             return tweet
         except Tweet.DoesNotExist:
             raise NotFound
 
-    def get(self, request, tweet_pk):
-        tweet = self.get_object(tweet_pk)
-        serializers = TweetSerializer(tweet)
+    def get(self, request, pk):
+        tweet = self.get_object(pk)
+        serializers = TweetSerializer(
+            tweet,
+        )
         return Response(
             serializers.data,
         )
 
-    def put(self, request, tweet_pk):
-        tweet = self.get_object(tweet_pk)
+    def put(self, request, pk):
+
+        tweet = self.get_object(pk)
+        if tweet.user != request.user:
+            raise PermissionDenied
         serializers = TweetSerializer(
             tweet,
             data=request.data,
             partial=True,
         )
-        if serializers.is_valid() == True:
-            updated_tweet = serializers.save()
-            return Response(
-                TweetSerializer(updated_tweet).data,
-            )
+        if serializers.is_valid():
+            updated_tweet = serializers.save(user=request.user)
+            return Response(TweetSerializer(updated_tweet).data)
         else:
             return Response(serializers.errors)
 
-    def delete(self, request, tweet_pk):
-        tweet = self.get_object(tweet_pk)
+    def delete(self, request, pk):
+        tweet = self.get_object(pk)
+        if tweet.user != request.user:
+            raise PermissionDenied
         tweet.delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
 
 class UserTweets(APIView):
-    def get(self, request, user_id):
+    def get(self, request, pk):
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(id=pk)
         except User.DoesNotExist:
             raise NotFound
 
