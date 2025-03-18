@@ -10,7 +10,7 @@ class CustomUserAdmin(UserAdmin):
             "Profile",  # 기본 정보
             {
                 "fields": (
-                    "profile_photo",
+                    "avatar",
                     "username",
                     "password",
                     "name",
