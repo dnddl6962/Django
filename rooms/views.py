@@ -211,7 +211,10 @@ class RoomDetail(APIView):
                         raise ParseError("Amenity not found")
             room.save()
             return Response(
-                RoomDetailSerializer(room).data,
+                RoomDetailSerializer(
+                    room,
+                    context={"request": request},
+                ).data,
             )
         else:
             return Response(serializer.errors)

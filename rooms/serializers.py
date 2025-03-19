@@ -3,7 +3,6 @@ from rest_framework import serializers
 from .models import Amenity, Room
 from users.serializers import UserListSerializer
 from categories.serializers import CategorySerializer
-from reviews.serializers import ReviewSerializer
 from medias.serializers import PhotoSerializer
 from wishlists.models import Wishlist
 
@@ -22,11 +21,11 @@ class RoomDetailSerializer(ModelSerializer):
     category = CategorySerializer(read_only=True)
     owner = UserListSerializer(read_only=True)
     amenities = AmenitySerializer(many=True, read_only=True)
+    photos = PhotoSerializer(many=True, read_only=True)
 
     rating = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
-    photos = PhotoSerializer(many=True, read_only=True)
 
     class Meta:
         model = Room

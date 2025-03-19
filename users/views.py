@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .models import User
 from .serializers import UserListSerializer, UserDetailSerializer, PrivateUserSerializer
 
@@ -34,6 +34,16 @@ class Me(APIView):
 
 
 class Users(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = User.objects.all()
+        serializer = UserListSerializer(
+            user,
+            many=True,
+        )
+        return Response(serializer.data)
 
     def post(self, request):
         password = request.data.get("password")
